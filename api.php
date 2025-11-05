@@ -171,7 +171,9 @@ switch ($method) {
             echo json_encode([
                 "success" => true,
                 "message" => "Data berhasil dihapus"
-            ]);
+            ]);  
+
+            
         } else {
             echo json_encode([
                 "success" => false,

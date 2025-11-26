@@ -159,262 +159,122 @@
       background: linear-gradient(135deg, #b0ce88 0%, #fffd8f 100%);
     }
 
+    /* Modal Styles */
+    .modal {
+      display: flex;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: auto;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Toast Styles */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .toast.success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .toast.error {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    /* Improved text contrast */
+    .text-high-contrast {
+      color: #1a202c;
+      /* Very dark gray almost black */
+    }
+
+    .text-medium-contrast {
+      color: #2d3748;
+      /* Dark gray */
+    }
+
+    .bg-high-contrast {
+      background-color: #1a202c;
+    }
+
+    .btn-cart {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .btn-cart:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+    }
+
     @media (max-width: 640px) {
       .hero-title {
         font-size: 2rem;
       }
     }
   </style>
-  <script>
-    let allData = [];
-    let currentCategory = 0;
-    let currentSearch = "";
-    let categories = [];
-
-    async function getCategories() {
-      try {
-        const res = await fetch("api.php?action=categories");
-        const result = await res.json();
-        categories = result.data || [];
-        return categories;
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        return [];
-      }
-    }
-
-    async function getData() {
-      try {
-        const res = await fetch("api.php");
-        const result = await res.json();
-        allData = result.data || result;
-        return allData;
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        return [];
-      }
-    }
-
-    function filterData() {
-      let filtered = allData;
-
-      if (currentCategory > 0) {
-        filtered = filtered.filter(
-          (item) => item.kategori_id == currentCategory
-        );
-      }
-
-      if (currentSearch) {
-        filtered = filtered.filter(
-          (item) =>
-          item.nama.toLowerCase().includes(currentSearch.toLowerCase()) ||
-          (item.lokasi &&
-            item.lokasi
-            .toLowerCase()
-            .includes(currentSearch.toLowerCase())) ||
-          (item.deskripsi &&
-            item.deskripsi
-            .toLowerCase()
-            .includes(currentSearch.toLowerCase())) ||
-          (item.nama_kategori &&
-            item.nama_kategori
-            .toLowerCase()
-            .includes(currentSearch.toLowerCase()))
-        );
-      }
-
-      return filtered;
-    }
-
-    function renderStars(rating) {
-      const fullStars = Math.floor(rating);
-      const hasHalfStar = rating % 1 >= 0.5;
-      let stars = "";
-
-      for (let i = 0; i < fullStars; i++) {
-        stars += "⭐";
-      }
-      if (hasHalfStar) {
-        stars += "⭐";
-      }
-
-      return stars;
-    }
-
-    function renderKuliner() {
-      const filtered = filterData();
-      const list = document.getElementById("kuliner-list");
-
-      if (filtered.length === 0) {
-        list.innerHTML = `
-        <div class="col-span-full text-center py-16">
-          <div class="text-7xl mb-4">🔍</div>
-          <h3 class="text-2xl font-bold text-dark-green mb-2">Tidak Ada Hasil</h3>
-          <p class="text-gray-600">Coba kata kunci atau kategori lain</p>
-        </div>
-      `;
-        return;
-      }
-
-      list.innerHTML = filtered
-        .map((item) => {
-          const categoryIcons = {
-            "Makanan Berat": "🍛",
-            "Kue Tradisional": "🍰",
-            "Pakaian Khas Daerah Kalsel": "👕",
-            Souvenir: "🎁",
-          };
-          const icon = categoryIcons[item.nama_kategori] || "📦";
-
-          return `
-      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-lg">
-        <div class="relative">
-          <img src="${item.gambar}" alt="${item.nama}" 
-               class="h-56 w-full object-cover"
-               onerror="this.src='https://via.placeholder.com/400x300/4C763B/ffffff?text=${encodeURIComponent(
-                 item.nama
-               )}'">
-          <div class="absolute top-4 right-4 bg-dark-green px-3 py-2 rounded-full shadow-lg">
-            <span class="rating-stars font-bold text-sm">${renderStars(
-              parseFloat(item.rating || 0)
-            )} ${item.rating || 0}</span>
-          </div>
-          <div class="absolute top-4 left-4 bg-light-yellow text-dark-green px-3 py-2 rounded-full text-xs font-bold shadow-lg border-2 border-medium-green">
-            ${icon} ${item.nama_kategori || "Lainnya"}
-          </div>
-        </div>
-        <div class="p-5 bg-gradient-to-b from-white to-gray-50">
-          <h3 class="text-xl font-bold text-dark-green mb-2 line-clamp-1">${
-            item.nama
-          }</h3>
-          <p class="text-medium-green font-semibold mb-3 flex items-center gap-1">
-            <span>📍</span> ${item.lokasi || "Kalimantan Selatan"}
-          </p>
-          <p class="text-gray-700 text-sm mb-3 line-clamp-2">${
-            item.deskripsi || ""
-          }</p>
-          <div class="flex items-center justify-between mt-4 pt-3 border-t border-light-green">
-            <span class="stat-badge">${item.nama_kategori || "Item"}</span>
-            <span class="text-medium-green font-bold text-lg">${
-              item.rating || 0
-            }/5</span>
-          </div>
-        </div>
-      </div>
-    `;
-        })
-        .join("");
-
-      document.getElementById("result-count").textContent = filtered.length;
-    }
-
-    async function renderRekomendasi() {
-      const data = await getData();
-      const top = data
-        .filter((d) => parseFloat(d.rating || 0) >= 4.7)
-        .slice(0, 4);
-      const list = document.getElementById("rekomendasi-list");
-
-      if (top.length === 0) {
-        list.innerHTML =
-          '<p class="text-center text-gray-500 col-span-full">Belum ada rekomendasi</p>';
-        return;
-      }
-
-      list.innerHTML = top
-        .map(
-          (item) => `
-      <div class="card-hover reko-card rounded-2xl overflow-hidden shadow-xl border-2 border-medium-green">
-        <div class="relative">
-          <img src="${item.gambar}" 
-               class="h-44 w-full object-cover"
-               onerror="this.src='https://via.placeholder.com/400x200/4C763B/ffffff?text=${encodeURIComponent(
-                 item.nama
-               )}'">
-          <div class="absolute top-3 right-3 bg-dark-green px-3 py-1 rounded-full shadow-lg">
-            <span class="rating-stars font-bold text-xs">${renderStars(
-              parseFloat(item.rating || 0)
-            )}</span>
-          </div>
-        </div>
-        <div class="p-4">
-          <h4 class="font-bold text-dark-green text-lg mb-2 line-clamp-1">${
-            item.nama
-          }</h4>
-          <p class="text-sm text-medium-green mb-3 font-medium">📍 ${
-            item.lokasi || "Kalsel"
-          }</p>
-          <div class="flex items-center justify-between pt-2 border-t-2 border-medium-green">
-            <span class="text-xs font-semibold text-dark-green bg-white px-2 py-1 rounded">${
-              item.nama_kategori || "Item"
-            }</span>
-            <span class="text-dark-green font-bold text-xl">${
-              item.rating || 0
-            }</span>
-          </div>
-        </div>
-      </div>
-    `
-        )
-        .join("");
-    }
-
-    function setCategory(categoryId) {
-      currentCategory = categoryId;
-
-      document.querySelectorAll(".category-badge").forEach((badge) => {
-        badge.classList.remove("active");
-      });
-
-      event.target.classList.add("active");
-
-      renderKuliner();
-    }
-
-    function handleSearch(event) {
-      currentSearch = event.target.value.trim();
-      renderKuliner();
-    }
-
-    async function init() {
-      document.getElementById("kuliner-list").innerHTML =
-        '<div class="loading-spinner col-span-full"></div>';
-
-      const cats = await getCategories();
-      await getData();
-      await renderRekomendasi();
-      renderKuliner();
-
-      const categoryList = document.getElementById("category-list");
-      const categoryIcons = {
-        Makanan: "🍛",
-        Kue: "🍰",
-        Pakaian: "👕",
-        Souvenir: "🎁",
-      };
-
-      const categoryHTML = cats
-        .map(
-          (cat) => `
-      <button onclick="setCategory(${cat.id})" 
-              class="category-badge">
-        ${categoryIcons[cat.nama_kategori] || "📦"} ${cat.nama_kategori}
-      </button>
-    `
-        )
-        .join("");
-
-      categoryList.innerHTML = `
-      <button onclick="setCategory(0)" 
-              class="category-badge active">
-        🌟 Semua Kategori
-      </button>
-      ${categoryHTML}
-    `;
-    }
-
-    window.onload = init;
-  </script>
 </head>
 
 <body
@@ -446,10 +306,14 @@
             class="hidden sm:block text-medium-green hover:text-dark-green font-semibold transition">
             📦 Katalog
           </a>
+          <button onclick="openOrderModal()" class="relative btn-cart px-4 py-2 rounded-full font-semibold transition">
+            🛒 Keranjang
+            <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center hidden">0</span>
+          </button>
           <a
             href="admin.php"
-            class="btn-primary px-5 py-2 rounded-full font-semibold shadow-lg">
-            🔐 Admin
+            class="bg-gradient-to-r from-red-500 to-red-600 text-white px-5 py-2 rounded-full font-semibold shadow-lg hover:from-red-600 hover:to-red-700 transition">
+            🔐 Login Admin
           </a>
         </div>
       </div>
@@ -461,7 +325,7 @@
     <div class="max-w-7xl mx-auto px-4 text-center">
       <div class="text-8xl mb-6 animate-bounce">🍽️</div>
       <h1
-        class="hero-title text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg text-dark-green">
+        class="hero-title text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg text-light-yellow">
         Budaya & Kuliner Kalimantan Selatan
       </h1>
       <p class="text-xl md:text-2xl text-light-green mb-10 font-medium">
@@ -542,6 +406,72 @@
     </div>
   </section>
 
+  <!-- Modal Pemesanan -->
+  <div id="orderModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="bg-gradient-to-r from-green-600 to-green-700 text-white p-6 rounded-t-2xl">
+        <div class="flex justify-between items-center">
+          <h3 class="text-2xl font-bold">🛒 Pesan Sekarang</h3>
+          <button onclick="closeOrderModal()" class="text-3xl hover:text-gray-200 transition">&times;</button>
+        </div>
+      </div>
+      <div class="p-6 bg-white">
+        <form id="orderForm" class="space-y-4">
+          <div>
+            <label class="block text-high-contrast font-bold mb-2 text-lg">Nama Lengkap *</label>
+            <input type="text" name="nama_pemesan" required
+              class="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-high-contrast bg-white placeholder-green-400">
+          </div>
+          <div>
+            <label class="block text-high-contrast font-bold mb-2 text-lg">Email *</label>
+            <input type="email" name="email" required
+              class="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-high-contrast bg-white placeholder-green-400">
+          </div>
+          <div>
+            <label class="block text-high-contrast font-bold mb-2 text-lg">Telepon *</label>
+            <input type="tel" name="telepon" required
+              class="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-high-contrast bg-white placeholder-green-400">
+          </div>
+          <div>
+            <label class="block text-high-contrast font-bold mb-2 text-lg">Alamat Pengiriman *</label>
+            <textarea name="alamat" rows="3" required
+              class="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-high-contrast bg-white placeholder-green-400"></textarea>
+          </div>
+
+          <div class="border-t-2 border-green-300 pt-4">
+            <h4 class="text-high-contrast font-bold text-lg mb-3">🛍️ Produk Dipesan:</h4>
+            <div id="order-items" class="space-y-3">
+              <!-- Items will be loaded here -->
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center pt-4 border-t-2 border-green-300">
+            <span class="text-xl font-bold text-high-contrast">Total Pembayaran:</span>
+            <span id="order-total" class="text-3xl font-bold text-green-600 bg-green-50 px-4 py-2 rounded-lg">Rp 0</span>
+          </div>
+
+          <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+            <div class="flex items-start">
+              <div class="flex-shrink-0">
+                <span class="text-yellow-500 text-xl">💡</span>
+              </div>
+              <div class="ml-3">
+                <p class="text-yellow-700 text-sm">
+                  <strong>Info:</strong> Pesanan akan diproses dalam 1x24 jam. Tim kami akan menghubungi Anda untuk konfirmasi.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit"
+            class="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-lg font-bold text-lg hover:from-green-700 hover:to-green-800 transition shadow-lg transform hover:scale-105">
+            🚀 Konfirmasi Pesanan
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer
     class="bg-dark-green text-white py-12 border-t-8 border-light-yellow">
@@ -604,6 +534,523 @@
       </div>
     </div>
   </footer>
+
+  <script>
+    let allData = [];
+    let currentCategory = 0;
+    let currentSearch = "";
+    let categories = [];
+    let cart = [];
+
+    // Toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    async function getCategories() {
+      try {
+        const res = await fetch("api.php?action=categories");
+        const result = await res.json();
+        categories = result.data || [];
+        return categories;
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        showToast('Gagal memuat kategori', 'error');
+        return [];
+      }
+    }
+
+    async function getData() {
+      try {
+        const res = await fetch("api.php");
+        const result = await res.json();
+        allData = result.data || result;
+        return allData;
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        showToast('Gagal memuat data produk', 'error');
+        return [];
+      }
+    }
+
+    function filterData() {
+      let filtered = allData;
+
+      if (currentCategory > 0) {
+        filtered = filtered.filter(
+          (item) => item.kategori_id == currentCategory
+        );
+      }
+
+      if (currentSearch) {
+        filtered = filtered.filter(
+          (item) =>
+          item.nama.toLowerCase().includes(currentSearch.toLowerCase()) ||
+          (item.lokasi &&
+            item.lokasi
+            .toLowerCase()
+            .includes(currentSearch.toLowerCase())) ||
+          (item.deskripsi &&
+            item.deskripsi
+            .toLowerCase()
+            .includes(currentSearch.toLowerCase())) ||
+          (item.nama_kategori &&
+            item.nama_kategori
+            .toLowerCase()
+            .includes(currentSearch.toLowerCase()))
+        );
+      }
+
+      return filtered;
+    }
+
+    function renderStars(rating) {
+      const numericRating = parseFloat(rating) || 0;
+      const fullStars = Math.floor(numericRating);
+      const hasHalfStar = numericRating % 1 >= 0.5;
+      let stars = "";
+
+      for (let i = 0; i < fullStars; i++) {
+        stars += "⭐";
+      }
+      if (hasHalfStar && fullStars < 5) {
+        stars += "⭐";
+      }
+
+      // Fill remaining stars with outline
+      const remainingStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+      for (let i = 0; i < remainingStars; i++) {
+        stars += "☆";
+      }
+
+      return stars;
+    }
+
+    function renderKuliner() {
+      const filtered = filterData();
+      const list = document.getElementById("kuliner-list");
+
+      if (filtered.length === 0) {
+        list.innerHTML = `
+        <div class="col-span-full text-center py-16">
+          <div class="text-7xl mb-4">🔍</div>
+          <h3 class="text-2xl font-bold text-dark-green mb-2">Tidak Ada Hasil</h3>
+          <p class="text-gray-600">Coba kata kunci atau kategori lain</p>
+        </div>
+      `;
+        return;
+      }
+
+      list.innerHTML = filtered
+        .map((item) => {
+          const categoryIcons = {
+            "Makanan Berat": "🍛",
+            "Kue Tradisional": "🍰",
+            "Minuman Khas": "🥤",
+            "Pakaian Adat": "👕",
+            "Souvenir": "🎁",
+            "Oleh-oleh": "🛍️"
+          };
+          const icon = categoryIcons[item.nama_kategori] || "📦";
+          const harga = item.harga ? `Rp ${item.harga.toLocaleString('id-ID')}` : 'Hubungi Admin';
+
+          return `
+      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-lg">
+        <div class="relative">
+          <img src="${item.gambar}" alt="${item.nama}" 
+               class="h-56 w-full object-cover"
+               onerror="this.src='https://via.placeholder.com/400x300/4C763B/ffffff?text=${encodeURIComponent(
+                 item.nama
+               )}'">
+          <div class="absolute top-4 right-4 bg-dark-green px-3 py-2 rounded-full shadow-lg">
+            <span class="rating-stars font-bold text-sm">${renderStars(
+              parseFloat(item.rating || 0)
+            )}</span>
+          </div>
+          <div class="absolute top-4 left-4 bg-light-yellow text-dark-green px-3 py-2 rounded-full text-xs font-bold shadow-lg border-2 border-medium-green">
+            ${icon} ${item.nama_kategori || "Lainnya"}
+          </div>
+        </div>
+        <div class="p-5 bg-gradient-to-b from-white to-gray-50">
+          <h3 class="text-xl font-bold text-dark-green mb-2 line-clamp-1">${
+            item.nama
+          }</h3>
+          <p class="text-medium-green font-semibold mb-3 flex items-center gap-1">
+            <span>📍</span> ${item.lokasi || "Kalimantan Selatan"}
+          </p>
+          <p class="text-gray-700 text-sm mb-3 line-clamp-2">${
+            item.deskripsi || "Tidak ada deskripsi"
+          }</p>
+          <div class="flex items-center justify-between mt-4 pt-3 border-t border-light-green">
+            <span class="text-lg font-bold text-dark-green">${harga}</span>
+            <span class="text-medium-green font-bold">${
+              item.rating || 0
+            }/5</span>
+          </div>
+          <div class="mt-4 flex gap-2">
+            <button onclick="addToCart(${item.id})" 
+                    class="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-green-800 transition font-medium">
+              🛒 Tambah
+            </button>
+            <button onclick="showDetail(${item.id})" 
+                    class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition font-medium">
+              ℹ️ Detail
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+        })
+        .join("");
+
+      document.getElementById("result-count").textContent = filtered.length;
+    }
+
+    async function renderRekomendasi() {
+      const data = await getData();
+      const top = data
+        .filter((d) => parseFloat(d.rating || 0) >= 4.5)
+        .slice(0, 4);
+      const list = document.getElementById("rekomendasi-list");
+
+      if (top.length === 0) {
+        list.innerHTML =
+          '<p class="text-center text-gray-500 col-span-full">Belum ada rekomendasi</p>';
+        return;
+      }
+
+      list.innerHTML = top
+        .map(
+          (item) => `
+      <div class="card-hover reko-card rounded-2xl overflow-hidden shadow-xl border-2 border-medium-green">
+        <div class="relative">
+          <img src="${item.gambar}" 
+               class="h-44 w-full object-cover"
+               onerror="this.src='https://via.placeholder.com/400x200/4C763B/ffffff?text=${encodeURIComponent(
+                 item.nama
+               )}'">
+          <div class="absolute top-3 right-3 bg-dark-green px-3 py-1 rounded-full shadow-lg">
+            <span class="rating-stars font-bold text-xs">${renderStars(
+              parseFloat(item.rating || 0)
+            )}</span>
+          </div>
+        </div>
+        <div class="p-4">
+          <h4 class="font-bold text-dark-green text-lg mb-2 line-clamp-1">${
+            item.nama
+          }</h4>
+          <p class="text-sm text-medium-green mb-3 font-medium">📍 ${
+            item.lokasi || "Kalsel"
+          }</p>
+          <div class="flex items-center justify-between pt-2 border-t-2 border-medium-green">
+            <span class="text-xs font-semibold text-dark-green bg-white px-2 py-1 rounded">${
+              item.nama_kategori || "Item"
+            }</span>
+            <span class="text-dark-green font-bold text-xl">${
+              item.rating || 0
+            }</span>
+          </div>
+          <button onclick="addToCart(${item.id})" 
+                  class="w-full mt-3 bg-gradient-to-r from-green-600 to-green-700 text-white py-2 rounded-lg hover:from-green-700 hover:to-green-800 transition font-medium">
+            🛒 Tambah ke Keranjang
+          </button>
+        </div>
+      </div>
+    `
+        )
+        .join("");
+    }
+
+    function setCategory(categoryId) {
+      currentCategory = categoryId;
+
+      document.querySelectorAll(".category-badge").forEach((badge) => {
+        badge.classList.remove("active");
+      });
+
+      if (event) {
+        event.target.classList.add("active");
+      }
+
+      renderKuliner();
+    }
+
+    function handleSearch(event) {
+      currentSearch = event.target.value.trim();
+      renderKuliner();
+    }
+
+    // Cart functionality
+    function addToCart(itemId) {
+      const item = allData.find(d => d.id == itemId);
+      if (!item) {
+        showToast('Produk tidak ditemukan', 'error');
+        return;
+      }
+
+      const existingItem = cart.find(cartItem => cartItem.id == itemId);
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        cart.push({
+          id: item.id,
+          nama: item.nama,
+          harga: item.harga || 0,
+          quantity: 1,
+          gambar: item.gambar
+        });
+      }
+
+      updateCartBadge();
+      showToast(`✅ ${item.nama} ditambahkan ke keranjang`, 'success');
+    }
+
+    function updateCartBadge() {
+      const badge = document.getElementById('cart-badge');
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+      if (badge) {
+        badge.textContent = totalItems;
+        badge.classList.toggle('hidden', totalItems === 0);
+      }
+    }
+
+    function openOrderModal() {
+      if (cart.length === 0) {
+        showToast('Keranjang masih kosong', 'error');
+        return;
+      }
+
+      const modal = document.getElementById('orderModal');
+      const itemsContainer = document.getElementById('order-items');
+      const totalElement = document.getElementById('order-total');
+
+      itemsContainer.innerHTML = cart.map(item => `
+        <div class="flex justify-between items-center py-3 border-b border-green-200">
+          <div class="flex items-center gap-3">
+            <img src="${item.gambar}" alt="${item.nama}" 
+                 class="w-12 h-12 object-cover rounded-lg border-2 border-green-200"
+                 onerror="this.src='https://via.placeholder.com/100/4C763B/ffffff?text=IMG'">
+            <div>
+              <h4 class="font-bold text-high-contrast">${item.nama}</h4>
+              <p class="text-sm text-green-600 font-semibold">Rp ${item.harga.toLocaleString('id-ID')}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 bg-green-50 rounded-lg px-2 py-1">
+            <button type="button" onclick="updateQuantity(${item.id}, -1)" 
+                    class="w-8 h-8 bg-green-200 text-green-800 rounded-full hover:bg-green-300 transition font-bold">-</button>
+            <span class="w-8 text-center font-bold text-high-contrast">${item.quantity}</span>
+            <button type="button" onclick="updateQuantity(${item.id}, 1)" 
+                    class="w-8 h-8 bg-green-200 text-green-800 rounded-full hover:bg-green-300 transition font-bold">+</button>
+          </div>
+        </div>
+      `).join('');
+
+      const total = cart.reduce((sum, item) => sum + (item.harga * item.quantity), 0);
+      totalElement.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+
+      modal.classList.remove('hidden');
+    }
+
+    function updateQuantity(itemId, change) {
+      const item = cart.find(i => i.id === itemId);
+      if (item) {
+        item.quantity = Math.max(0, item.quantity + change);
+
+        if (item.quantity === 0) {
+          cart = cart.filter(i => i.id !== itemId);
+        }
+
+        updateCartBadge();
+
+        if (cart.length === 0) {
+          closeOrderModal();
+        } else {
+          openOrderModal(); // Refresh modal
+        }
+      }
+    }
+
+    function closeOrderModal() {
+      document.getElementById('orderModal').classList.add('hidden');
+    }
+
+    function showDetail(itemId) {
+      const item = allData.find(d => d.id == itemId);
+      if (!item) {
+        showToast('Detail produk tidak ditemukan', 'error');
+        return;
+      }
+
+      const harga = item.harga ? `Rp ${item.harga.toLocaleString('id-ID')}` : 'Hubungi Admin untuk harga';
+
+      const detailHTML = `
+        <div class="modal">
+          <div class="modal-content" style="max-width: 600px;">
+            <div class="bg-gradient-to-r from-green-600 to-green-700 text-white p-6 rounded-t-2xl">
+              <div class="flex justify-between items-center">
+                <h3 class="text-2xl font-bold">📋 Detail Produk</h3>
+                <button onclick="this.closest('.modal').remove()" class="text-3xl hover:text-gray-200 transition">&times;</button>
+              </div>
+            </div>
+            <div class="p-6 bg-white">
+              <div class="mb-6">
+                <img src="${item.gambar}" alt="${item.nama}" 
+                     class="w-full h-64 object-cover rounded-lg mb-4 border-4 border-green-200"
+                     onerror="this.src='https://via.placeholder.com/600x400/4C763B/ffffff?text=No+Image'">
+                <h4 class="text-2xl font-bold text-high-contrast mb-2">${item.nama}</h4>
+                <p class="text-medium-green font-semibold mb-2">📍 ${item.lokasi || 'Kalimantan Selatan'}</p>
+                <div class="flex items-center gap-4 mb-4 flex-wrap">
+                  <span class="bg-light-yellow text-dark-green px-3 py-1 rounded-full text-sm font-bold">
+                    ${item.nama_kategori || 'Lainnya'}
+                  </span>
+                  <span class="text-lg font-bold text-high-contrast bg-green-50 px-3 py-1 rounded-lg">${harga}</span>
+                  <span class="text-lg font-bold text-high-contrast bg-yellow-50 px-3 py-1 rounded-lg">${renderStars(item.rating)} ${item.rating || 0}/5</span>
+                </div>
+              </div>
+              
+              ${item.deskripsi ? `
+              <div class="mb-4">
+                <h5 class="font-bold text-high-contrast mb-2 text-lg">📝 Deskripsi</h5>
+                <p class="text-medium-contrast bg-gray-50 p-3 rounded-lg">${item.deskripsi}</p>
+              </div>
+              ` : ''}
+              
+              ${item.bahan_bahan ? `
+              <div class="mb-4">
+                <h5 class="font-bold text-high-contrast mb-2 text-lg">🛒 Bahan-bahan</h5>
+                <p class="text-medium-contrast bg-green-50 p-3 rounded-lg whitespace-pre-line">${item.bahan_bahan}</p>
+              </div>
+              ` : ''}
+              
+              ${item.cara_membuat ? `
+              <div class="mb-4">
+                <h5 class="font-bold text-high-contrast mb-2 text-lg">👨‍🍳 Cara Membuat</h5>
+                <p class="text-medium-contrast bg-blue-50 p-3 rounded-lg whitespace-pre-line">${item.cara_membuat}</p>
+              </div>
+              ` : ''}
+              
+              ${item.tips_saji ? `
+              <div class="mb-4">
+                <h5 class="font-bold text-high-contrast mb-2 text-lg">💡 Tips Penyajian</h5>
+                <p class="text-medium-contrast bg-yellow-50 p-3 rounded-lg whitespace-pre-line">${item.tips_saji}</p>
+              </div>
+              ` : ''}
+              
+              <div class="flex gap-3 mt-6">
+                <button onclick="addToCart(${item.id}); this.closest('.modal').remove();" 
+                        class="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition text-lg">
+                  🛒 Tambah ke Keranjang
+                </button>
+                <button onclick="this.closest('.modal').remove()" 
+                        class="flex-1 bg-gray-200 text-high-contrast py-3 rounded-lg font-bold hover:bg-gray-300 transition text-lg">
+                  ❌ Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', detailHTML);
+    }
+
+    // Handle form submission
+    document.getElementById('orderForm')?.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const orderData = {
+        nama_pemesan: formData.get('nama_pemesan'),
+        email: formData.get('email'),
+        telepon: formData.get('telepon'),
+        alamat: formData.get('alamat'),
+        items: cart,
+        total_harga: cart.reduce((sum, item) => sum + (item.harga * item.quantity), 0)
+      };
+
+      // Show loading state
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<span class="loading"></span> Memproses...';
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch("api.php?action=order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(orderData)
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          showToast(`✅ Pesanan berhasil! Kode: ${result.data.kode_pesanan}`, 'success');
+          cart = [];
+          updateCartBadge();
+          closeOrderModal();
+          this.reset();
+        } else {
+          showToast(result.error || 'Gagal membuat pesanan', 'error');
+        }
+      } catch (error) {
+        showToast('Error: Gagal membuat pesanan', 'error');
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+
+    async function init() {
+      document.getElementById("kuliner-list").innerHTML =
+        '<div class="loading-spinner col-span-full"></div>';
+
+      const cats = await getCategories();
+      await getData();
+      await renderRekomendasi();
+      renderKuliner();
+
+      const categoryList = document.getElementById("category-list");
+      const categoryIcons = {
+        "Makanan Berat": "🍛",
+        "Kue Tradisional": "🍰",
+        "Minuman Khas": "🥤",
+        "Pakaian Adat": "👕",
+        "Souvenir": "🎁",
+        "Oleh-oleh": "🛍️"
+      };
+
+      const categoryHTML = cats
+        .map(
+          (cat) => `
+      <button onclick="setCategory(${cat.id})" 
+              class="category-badge">
+        ${categoryIcons[cat.nama_kategori] || "📦"} ${cat.nama_kategori}
+      </button>
+    `
+        )
+        .join("");
+
+      categoryList.innerHTML = `
+      <button onclick="setCategory(0)" 
+              class="category-badge active">
+        🌟 Semua Kategori
+      </button>
+      ${categoryHTML}
+    `;
+    }
+
+    window.onload = init;
+  </script>
 </body>
 
-</html>
+</html>``
